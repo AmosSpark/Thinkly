@@ -12,7 +12,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 /*
- * @route POST /api/v1/signup
+ * @route POST /api/v1/mobile/signup
  * @desc register new user
  * @ascess public
  */
@@ -27,7 +27,7 @@ const createNewUser = catchAsync(
 );
 
 /*
- * @route POST /api/v1/login
+ * @route POST /api/v1/mobile/login
  * @desc login a user
  * @ascess public
  */
@@ -54,7 +54,7 @@ const logUserIn = catchAsync(
 );
 
 /*
- * @route GET /api/v1/logout
+ * @route GET /api/v1/mobile/logout
  * @desc logout a user
  * @ascess private
  */
