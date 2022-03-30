@@ -16,6 +16,9 @@ import { app } from "./app";
 // Environment Variables Configuration
 dotenv.config();
 
+// Database Configuration
+import "./resources/models/db_config/db.config";
+
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
