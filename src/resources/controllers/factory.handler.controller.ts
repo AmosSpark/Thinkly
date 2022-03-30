@@ -27,8 +27,11 @@ const createOne = (Model: Model<any>) =>
 
 const getAll = (Model: Model<any>) =>
   catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    // To allow for nested GET coments on article
+    let filter = {};
+    if (req.params.articleId) filter = { article: req.params.articleId };
     // Execute query
-    const queryFeatures = new QueryFeatures(Model.find(), req.query)
+    const queryFeatures = new QueryFeatures(Model.find(filter), req.query)
       .filter()
       .sort()
       .limitFileds()
