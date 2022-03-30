@@ -1,8 +1,8 @@
 import { Types } from "mongoose";
 
 interface IBookmarkDocument {
-  user?: Types.ObjectId;
   article?: Types.ObjectId;
+  bookmarkedBy?: Types.ObjectId;
   createdAt?: Date;
 }
 

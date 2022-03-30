@@ -8,20 +8,36 @@ const CommentSchema: Schema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Article",
     },
-    user: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
     comment: {
       type: String,
       required: [true, "Cannot post an empty comment"],
     },
+    commentBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
   {
-    timestamps: true,
-    toJSON: { virtuals: true },
+    toJSON: {
+      virtuals: true,
+      transform: (_doc, ret) => {
+        delete ret.id;
+        delete ret.__v;
+      },
+    },
     toObject: { virtuals: true },
+    timestamps: true,
   }
 );
+
+// Populate - comment with article
+
+CommentSchema.pre(/^find/, function (next: Function) {
+  this.populate({
+    path: "commentBy",
+    select: "fullName",
+  });
+  next();
+});
 
 export default model<ICommentDocument>("Comment", CommentSchema);

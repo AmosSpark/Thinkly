@@ -38,10 +38,38 @@ const ArticleSchema: Schema = new Schema(
     },
   },
   {
-    timestamps: true,
-    toJSON: { virtuals: true },
+    toJSON: {
+      virtuals: true,
+      transform: (_doc, ret) => {
+        delete ret.id;
+        delete ret.__v;
+      },
+    },
     toObject: { virtuals: true },
+    timestamps: true,
   }
 );
+
+// Virtual Population
+
+// Populate no. of comments
+
+ArticleSchema.virtual("noOfComments", {
+  ref: "Comment",
+  foreignField: "article",
+  localField: "_id",
+  count: true,
+});
+
+/*
+ * @desc poputate comments when
+ * 'api/v1/articles/:id' is queried
+ */
+
+ArticleSchema.virtual("comments", {
+  ref: "Comment",
+  foreignField: "article",
+  localField: "_id",
+});
 
 export default model<IArticleDocument>("Article", ArticleSchema);

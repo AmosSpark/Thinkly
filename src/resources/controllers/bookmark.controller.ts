@@ -42,11 +42,11 @@ const postBookmark = catchAsync(
       try {
         // create bookmark
         const newBookmark = await Bookmark.create({
-          user: req.user.id,
           article: req.params.id,
+          bookmarkedBy: req.user.id,
         });
 
-        res.status(201).json({
+        return res.status(201).json({
           status: `success`,
           data: {
             data: newBookmark,
@@ -67,8 +67,8 @@ const postBookmark = catchAsync(
  */
 
 const getOneBookmark = getOne(Bookmark, {
-  path: "user article",
-  select: "fullName headline title category",
+  path: "bookmarkedBy",
+  select: "fullName",
 });
 
 /*

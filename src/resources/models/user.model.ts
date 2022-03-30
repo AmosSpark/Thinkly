@@ -54,9 +54,15 @@ const UserSchema: Schema = new Schema(
     },
   },
   {
-    timestamps: true,
-    toJSON: { virtuals: true },
+    toJSON: {
+      virtuals: true,
+      transform: (_doc, ret) => {
+        delete ret.id;
+        delete ret.__v;
+      },
+    },
     toObject: { virtuals: true },
+    timestamps: true,
   }
 );
 
@@ -72,6 +78,57 @@ UserSchema.pre("save", async function (next: Function) {
   // do not persist passwordConfirm to db
   this.passwordConfirm = undefined;
   next();
+});
+
+// Virtual Population
+
+// Populate no. of articles
+
+UserSchema.virtual("noOfArticles", {
+  ref: "Article",
+  foreignField: "author",
+  localField: "_id",
+  count: true,
+});
+
+// Populate no. of bookmarks
+
+UserSchema.virtual("noOfBookmarks", {
+  ref: "Bookmark",
+  foreignField: "bookmarkedBy",
+  localField: "_id",
+  count: true,
+});
+
+// Populate no. of comments
+
+UserSchema.virtual("noOfComments", {
+  ref: "Comment",
+  foreignField: "commentBy",
+  localField: "_id",
+  count: true,
+});
+
+/*
+ * @desc poputate articles when
+ * 'api/v1/users/:id' is queried
+ */
+
+UserSchema.virtual("articles", {
+  ref: "Article",
+  foreignField: "author",
+  localField: "_id",
+});
+
+/*
+ * @desc poputate bookmarks when
+ * 'api/v1/users/:id' is queried
+ */
+
+UserSchema.virtual("bookmarks", {
+  ref: "Bookmark",
+  foreignField: "bookmarkedBy",
+  localField: "_id",
 });
 
 export default model<IUserDocument>("User", UserSchema);

@@ -25,13 +25,16 @@ const createOne = (Model: Model<any>) =>
  * @desc get all document
  */
 
-const getAll = (Model: Model<any>) =>
+const getAll = (Model: Model<any>, popOptions?: any) =>
   catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     // To allow for nested GET coments on article
     let filter = {};
     if (req.params.articleId) filter = { article: req.params.articleId };
     // Execute query
-    const queryFeatures = new QueryFeatures(Model.find(filter), req.query)
+    const queryFeatures = new QueryFeatures(
+      Model.find(filter).populate(popOptions),
+      req.query
+    )
       .filter()
       .sort()
       .limitFileds()
@@ -84,7 +87,7 @@ const updateOne = (Model: Model<any>) =>
     const doc = await Model.findByIdAndUpdate(id, body, {
       new: true,
       runValidator: true,
-    });
+    }).clone();
 
     if (!doc) {
       return next(new AppError(`Document with 'id': ${id} not found`, 404));
@@ -105,7 +108,7 @@ const updateOne = (Model: Model<any>) =>
 const deleteOne = (Model: Model<any>) =>
   catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
-    const doc = await Model.findByIdAndRemove(id);
+    const doc = await Model.findByIdAndDelete(id).clone();
 
     if (!doc) {
       return next(new AppError(`Document with id: ${id} not found`, 404));

@@ -43,11 +43,11 @@ const postComment = catchAsync(
         // create comment
         const newComment = await Comment.create({
           article: req.params.id,
-          user: req.user.id,
+          commentBy: req.user.id,
           comment: req.body.comment,
         });
 
-        res.status(201).json({
+        return res.status(201).json({
           status: `success`,
           data: {
             data: newComment,
@@ -68,7 +68,7 @@ const postComment = catchAsync(
  */
 
 const getOneComment = getOne(Comment, {
-  path: "article user",
+  path: "article commentBy",
   select: "title category fullName headline",
 });
 

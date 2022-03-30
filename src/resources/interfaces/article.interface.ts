@@ -5,6 +5,7 @@ interface IArticleDocument {
   category: string;
   body: string;
   author?: Types.ObjectId;
+  commentCount?: number;
 }
 
 export default IArticleDocument;

@@ -15,7 +15,9 @@ import {
  * @ascess private
  */
 
-const getAllUser = getAll(User);
+const getAllUser = getAll(User, {
+  path: "noOfArticles noOfBookmarks noOfComments",
+});
 
 /*
  * @route GET api/v1/mobile/users/:id
@@ -23,7 +25,10 @@ const getAllUser = getAll(User);
  * @ascess private
  */
 
-const getAuser = getOne(User);
+const getAuser = getOne(User, {
+  path: "noOfArticles noOfBookmarks noOfComments articles bookmarks",
+  select: "title category createdAt",
+});
 
 /*
  * @route GET api/v1/mobile/users/me

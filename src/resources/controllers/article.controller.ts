@@ -21,7 +21,7 @@ dotenv.config();
  * @ascess public
  */
 
-const getArticles = getAll(Article);
+const getArticles = getAll(Article, { path: "noOfComments" });
 
 /*
  * @route GET api/v1/mobile/articles/:id
@@ -30,8 +30,8 @@ const getArticles = getAll(Article);
  */
 
 const getOneArticle = getOne(Article, {
-  path: "author",
-  select: "fullName headline",
+  path: "noOfComments author comments",
+  select: "fullName headline createdAt updatedAt comment",
 });
 
 /*
@@ -59,13 +59,14 @@ const postArticle = catchAsync(
           author: req.user.id,
         });
 
-        res.status(201).json({
+        return res.status(201).json({
           status: `success`,
           data: {
             data: newArticle,
           },
         });
       } catch (error: any) {
+        console.log(error);
         return next(new AppError(error.message, 400));
       }
       next();
