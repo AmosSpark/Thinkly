@@ -6,6 +6,9 @@ import mongoSanitize from "express-mongo-sanitize";
 import xss from "xss-clean";
 import compression from "compression";
 
+import globalError from "@/middleware/global-error.middleware";
+import unhandledRoutes from "@/resources/controllers/unhandled-error.controller";
+
 // Application Variables
 
 const app = express();
@@ -26,5 +29,10 @@ app.use(xss());
 app.use(compression());
 
 app.use(express.urlencoded({ extended: false }));
+
+// unhandled routes
+app.all("*", unhandledRoutes);
+// global error
+app.use(globalError);
 
 export { app };
