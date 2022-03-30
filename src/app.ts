@@ -7,7 +7,7 @@ import xss from "xss-clean";
 import compression from "compression";
 
 import globalError from "@/middleware/global-error.middleware";
-import { usersRouter } from "@/resources/routes";
+import { usersRouter, articlesRouter } from "@/resources/routes";
 import unhandledRoutes from "@/resources/controllers/unhandled-error.controller";
 
 // Application Variables
@@ -33,6 +33,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // routes
 app.use("/api/v1/mobile", usersRouter);
+app.use("/api/v1/mobile", articlesRouter);
 
 // unhandled routes
 app.all("*", unhandledRoutes);

@@ -14,20 +14,19 @@ const ArticleSchema: Schema = new Schema(
       type: String,
       enum: {
         values: [
-          "entertainment",
-          "internet",
-          "games",
-          "society",
-          "woman",
-          "education",
+          "ENTERTAINMENT",
+          "INTERNET",
+          "GAMES",
+          "SOCIETY",
+          "WOMAN",
+          "EDUCATION",
         ],
-        messages: [
-          "Category should be either: entertainment, internet, games, society, woman, or education",
-        ],
-        required: [true, "Category is required"],
-        trim: true,
-        uppercase: true,
+        message:
+          "Category '{VALUE}' is not available. Category should be either: entertainment, internet, games, society, woman, or education",
       },
+      required: [true, "Category is required"],
+      trim: true,
+      uppercase: true,
     },
     body: {
       type: String,

@@ -21,21 +21,19 @@ const usersRouter = Router() as Express;
 usersRouter.route("/auth/signup").post(createNewUser);
 usersRouter.route("/auth/login").post(logUserIn);
 
-// protect all routes below
-usersRouter.use(protectRoute);
+// protect all routes below - allow only loggedin users
 
-usersRouter.route("/auth/logout").get(logUserOut);
-usersRouter.route("/users/me").get(getUserProfile, getAuser);
+usersRouter.route("/auth/logout").get(protectRoute, logUserOut);
+usersRouter.route("/users/me").get(protectRoute, getUserProfile, getAuser);
 
 // restrict below routes to admin only
-usersRouter.use(restrictTo("admin"));
 
-usersRouter.route("/users").get(getAllUser);
+usersRouter.route("/users").get(protectRoute, restrictTo("admin"), getAllUser);
 
 usersRouter
   .route("/users/:id")
-  .get(getAuser)
-  .patch(updateAuser)
-  .delete(deleteAuser);
+  .get(protectRoute, restrictTo("admin"), getAuser)
+  .patch(protectRoute, restrictTo("admin"), updateAuser)
+  .delete(protectRoute, restrictTo("admin"), deleteAuser);
 
 export { usersRouter };
