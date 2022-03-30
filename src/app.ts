@@ -11,6 +11,7 @@ import {
   usersRouter,
   articlesRouter,
   commentsRouter,
+  bookmarksRouter,
 } from "@/resources/routes";
 import unhandledRoutes from "@/resources/controllers/unhandled-error.controller";
 
@@ -39,6 +40,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/api/v1/mobile", usersRouter);
 app.use("/api/v1/mobile/articles", articlesRouter);
 app.use("/api/v1/mobile/comments", commentsRouter);
+app.use("/api/v1/mobile/bookmarks", bookmarksRouter);
 
 // unhandled routes
 app.all("*", unhandledRoutes);

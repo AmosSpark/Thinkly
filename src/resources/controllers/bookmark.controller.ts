@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import catchAsync from "@/utils/catch-async.utils";
 import AppError from "@/utils/app-error.utils";
 import User from "@/resources/models/user.model";
-import Comment from "@/resources/models/comment.model";
+import Bookmark from "@/resources/models/bookmark.model";
 import {
   getAll,
   getOne,
@@ -16,20 +16,20 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 /*
- * @route GET api/v1/mobile/comments
- * @desc get all comments
+ * @route GET api/v1/mobile/bookmarks
+ * @desc get all bookmarks
  * @ascess private
  */
 
-const getComments = getAll(Comment);
+const getBookmarks = getAll(Bookmark);
 
 /*
- * @route POST api/v1/mobile/articles:articleId/comments
- * @desc post a comment
+ * @route POST api/v1/mobile/articles:articleId/bookmarks
+ * @desc post a bookmark
  * @ascess private
  */
 
-const postComment = catchAsync(
+const postBookmark = catchAsync(
   async (req: Request | any, res: Response, next: NextFunction) => {
     // get user
     const JWT_SECRET = String(process.env.JWT_SECRET);
@@ -40,17 +40,16 @@ const postComment = catchAsync(
       req.user = user;
 
       try {
-        // create comment
-        const newComment = await Comment.create({
-          article: req.params.id,
+        // create bookmark
+        const newBookmark = await Bookmark.create({
           user: req.user.id,
-          comment: req.body.comment,
+          article: req.params.id,
         });
 
         res.status(201).json({
           status: `success`,
           data: {
-            data: newComment,
+            data: newBookmark,
           },
         });
       } catch (error: any) {
@@ -62,36 +61,22 @@ const postComment = catchAsync(
 );
 
 /*
- * @route GET api/v1/mobile/comments/:id
- * @desc get a comment
+ * @route GET api/v1/mobile/bookmarks/:id
+ * @desc get a bookmark
  * @ascess private
  */
 
-const getOneComment = getOne(Comment, {
-  path: "article user",
-  select: "title category fullName headline",
+const getOneBookmark = getOne(Bookmark, {
+  path: "user article",
+  select: "fullName headline title category",
 });
 
 /*
- * @route PATCH api/v1/mobile/comments/:id
- * @desc update a comment
+ * @route DEL api/v1/mobile/bookmarks/:id
+ * @desc delete a bookmark
  * @ascess private
  */
 
-const updateComment = updateOne(Comment);
+const deleteBookmark = deleteOne(Bookmark);
 
-/*
- * @route DEL api/v1/mobile/comments/:id
- * @desc delete a comment
- * @ascess private
- */
-
-const deleteComment = deleteOne(Comment);
-
-export {
-  getComments,
-  postComment,
-  getOneComment,
-  updateComment,
-  deleteComment,
-};
+export { getBookmarks, postBookmark, getOneBookmark, deleteBookmark };
