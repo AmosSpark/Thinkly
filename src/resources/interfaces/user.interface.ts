@@ -5,6 +5,7 @@ interface IUserDocument {
   headline?: string;
   bio?: string;
   role?: string;
+  active?: boolean;
 }
 
 interface IUserLogin {
@@ -12,4 +13,9 @@ interface IUserLogin {
   password: string;
 }
 
-export { IUserDocument, IUserLogin };
+interface IChangePassword {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export { IUserDocument, IUserLogin, IChangePassword };

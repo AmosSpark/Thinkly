@@ -47,7 +47,7 @@ const postComment = catchAsync(
           comment: req.body.comment,
         });
 
-        return res.status(201).json({
+        res.status(201).json({
           status: `success`,
           data: {
             data: newComment,

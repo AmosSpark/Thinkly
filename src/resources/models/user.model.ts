@@ -52,6 +52,11 @@ const UserSchema: Schema = new Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    active: {
+      type: Boolean,
+      default: true,
+      select: false,
+    },
   },
   {
     toJSON: {
@@ -129,6 +134,17 @@ UserSchema.virtual("bookmarks", {
   ref: "Bookmark",
   foreignField: "bookmarkedBy",
   localField: "_id",
+});
+
+/*
+ * @desc do not show inactive (deactived) users when
+ * 'api/vi/users' is queried
+ */
+
+UserSchema.pre(/^find/, function (next) {
+  // this points to the current query
+  this.find({ active: { $ne: false } });
+  next();
 });
 
 export default model<IUserDocument>("User", UserSchema);

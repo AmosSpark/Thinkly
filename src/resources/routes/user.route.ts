@@ -3,6 +3,7 @@ import { Router, Express } from "express";
 import {
   createNewUser,
   logUserIn,
+  changePassword,
   logUserOut,
   protectRoute,
   restrictTo,
@@ -11,9 +12,11 @@ import {
 import {
   getAllUser,
   getUserProfile,
+  updateUserProfile,
   getAuser,
   updateAuser,
   deleteAuser,
+  deactivateMyAccount,
 } from "@/resources/controllers/user.controller";
 
 const usersRouter = Router() as Express;
@@ -25,6 +28,13 @@ usersRouter.route("/auth/login").post(logUserIn);
 
 usersRouter.route("/auth/logout").get(protectRoute, logUserOut);
 usersRouter.route("/users/me").get(protectRoute, getUserProfile, getAuser);
+usersRouter
+  .route("/users/me/change-password")
+  .patch(protectRoute, changePassword);
+usersRouter.route("/users/me/update-me").patch(protectRoute, updateUserProfile);
+usersRouter
+  .route("/users/me/deactivate-account")
+  .delete(protectRoute, deactivateMyAccount);
 
 // restrict below routes to admin only
 

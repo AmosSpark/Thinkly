@@ -46,7 +46,7 @@ const postBookmark = catchAsync(
           bookmarkedBy: req.user.id,
         });
 
-        return res.status(201).json({
+        res.status(201).json({
           status: `success`,
           data: {
             data: newBookmark,

@@ -6,7 +6,10 @@ import { createSendToken } from "@/middleware/token.middleware";
 import catchAsync from "@/utils/catch-async.utils";
 import AppError from "@/utils/app-error.utils";
 import User from "@/resources/models/user.model";
-import { IUserLogin } from "@/resources/interfaces/user.interface";
+import {
+  IUserLogin,
+  IChangePassword,
+} from "@/resources/interfaces/user.interface";
 import * as dotenv from "dotenv";
 
 dotenv.config();
@@ -50,6 +53,55 @@ const logUserIn = catchAsync(
       return next(new AppError(`Incorrect email or password`, 401));
     }
     createSendToken(user, 200, res);
+  }
+);
+
+/*
+ * @route GET /api/v1/mobile/user/change-password
+ * @desc change password of a looged in user
+ * @ascess private
+ */
+
+const changePassword = catchAsync(
+  async (req: Request | any, res: Response, next: NextFunction) => {
+    // get user
+    const JWT_SECRET = String(process.env.JWT_SECRET);
+    const token = req.headers.authorization.split(" ")[1];
+
+    jwt.verify(token, JWT_SECRET, async (err: any, decoded: any) => {
+      if (err) return err;
+      const user = await User.findById(decoded.id);
+      req.user = user;
+
+      const passwordChange: IChangePassword = req.body;
+
+      const foundUser: any = await User.findById(req.user.id).select(
+        "+password"
+      );
+
+      // validate password
+
+      if (
+        !user ||
+        !(await byctypt.compare(
+          passwordChange.currentPassword,
+          foundUser.password!
+        ))
+      ) {
+        return next(
+          new AppError(`Your current password is wrong. Try again`, 401)
+        );
+      }
+
+      // set new password and save
+      foundUser.password = passwordChange.newPassword;
+      await foundUser.save();
+
+      // login and send JWT
+      createSendToken(foundUser, 200, res);
+
+      next();
+    });
   }
 );
 
@@ -135,4 +187,11 @@ const restrictTo = (...roles: string[]) => {
   };
 };
 
-export { createNewUser, logUserIn, logUserOut, protectRoute, restrictTo };
+export {
+  createNewUser,
+  logUserIn,
+  changePassword,
+  logUserOut,
+  protectRoute,
+  restrictTo,
+};
