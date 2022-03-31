@@ -34,7 +34,7 @@ const BookmarkSchema: Schema = new Schema(
 BookmarkSchema.pre(/^find/, function (next: Function) {
   this.populate({
     path: "article",
-    select: "-author -body -createdAt -updatedAt ",
+    select: "-author -body -createdAt -updatedAt -noOfComments",
   });
   next();
 });

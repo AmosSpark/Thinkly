@@ -87,7 +87,7 @@ const updateOne = (Model: Model<any>) =>
     const doc = await Model.findByIdAndUpdate(id, body, {
       new: true,
       runValidator: true,
-    }).clone();
+    });
 
     if (!doc) {
       return next(new AppError(`Document with 'id': ${id} not found`, 404));
@@ -108,7 +108,7 @@ const updateOne = (Model: Model<any>) =>
 const deleteOne = (Model: Model<any>) =>
   catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
-    const doc = await Model.findByIdAndDelete(id).clone();
+    const doc = await Model.findByIdAndDelete(id);
 
     if (!doc) {
       return next(new AppError(`Document with id: ${id} not found`, 404));

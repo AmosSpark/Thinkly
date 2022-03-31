@@ -21,8 +21,7 @@ dotenv.config();
  * @ascess public
  */
 
-const getArticles = getAll(Article, { path: "noOfComments" });
-
+const getArticles = getAll(Article);
 /*
  * @route GET api/v1/mobile/articles/:id
  * @desc get an article
@@ -30,8 +29,7 @@ const getArticles = getAll(Article, { path: "noOfComments" });
  */
 
 const getOneArticle = getOne(Article, {
-  path: "noOfComments author comments",
-  select: "fullName headline createdAt updatedAt comment",
+  path: "comments"
 });
 
 /*

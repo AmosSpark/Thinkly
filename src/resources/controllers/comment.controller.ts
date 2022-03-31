@@ -21,7 +21,10 @@ dotenv.config();
  * @ascess private
  */
 
-const getComments = getAll(Comment);
+const getComments = getAll(Comment, {
+  path: "article",
+  select: "-body -author -noOfComments -createdAt -updatedAt",
+});
 
 /*
  * @route POST api/v1/mobile/articles:articleId/comments
@@ -68,7 +71,7 @@ const postComment = catchAsync(
  */
 
 const getOneComment = getOne(Comment, {
-  path: "article commentBy",
+  path: "article",
   select: "title category fullName headline",
 });
 
