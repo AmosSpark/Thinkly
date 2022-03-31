@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, Query } from "mongoose";
 
 import IArticleDocument from "@/resources/interfaces/article.interface";
 
@@ -36,6 +36,10 @@ const ArticleSchema: Schema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
+    noOfComments: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     toJSON: {
@@ -50,16 +54,20 @@ const ArticleSchema: Schema = new Schema(
   }
 );
 
+// Populate - author with article
+
+ArticleSchema.pre<Query<IArticleDocument, IArticleDocument>>(
+  /^find/,
+  function (next: Function) {
+    this.populate({
+      path: "author",
+      select: "fullName headline",
+    });
+    next();
+  }
+);
+
 // Virtual Population
-
-// Populate no. of comments
-
-ArticleSchema.virtual("noOfComments", {
-  ref: "Comment",
-  foreignField: "article",
-  localField: "_id",
-  count: true,
-});
 
 /*
  * @desc poputate comments when
