@@ -36,8 +36,19 @@ const getAll = (Model: Model<any>) =>
 
     const doc = await queryFeatures.query;
 
+    // set page number
+
+    let pageNo: string;
+
+    const totalPage: number = (await Model.countDocuments()) / 10;
+
+    req.query.page
+      ? (pageNo = req.query.page + "/" + String(totalPage))
+      : (pageNo = "1" + "/" + String(totalPage));
+
     return res.status(200).json({
       status: `success`,
+      page: pageNo,
       results: doc.length,
       totalDoc: await Model.countDocuments(),
       data: {
