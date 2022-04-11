@@ -22,7 +22,7 @@ commentsRouter
 
 commentsRouter
   .route("/:id")
-  .get(protectRoute, restrictTo("admin"), getOneComment)
+  .get(protectRoute, getOneComment)
   .patch(protectRoute, restrictTo("user", "admin"), updateComment)
   .delete(protectRoute, restrictTo("user", "admin"), deleteComment);
 
