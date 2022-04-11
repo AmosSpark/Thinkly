@@ -30,8 +30,8 @@ class QueryFeatures {
       const sortBy = this.queryStr.sort.split(",").join(" ");
       this.query = this.query.sort(sortBy);
     } else {
-      // default sort - sort by highest avg. rating
-      this.query = this.query.sort("-averageRating");
+      // default sort - sort by latest article
+      this.query = this.query.sort("-createdAt");
     }
 
     return this;

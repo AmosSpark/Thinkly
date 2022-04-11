@@ -7,6 +7,7 @@ import {
 
 import {
   getArticles,
+  getArticlesTrendingThisWeek,
   getOneArticle,
   postArticle,
   updateArticle,
@@ -22,6 +23,10 @@ articlesRouter
   .route("/")
   .post(protectRoute, restrictTo("user", "admin"), postArticle)
   .get(getArticles);
+
+articlesRouter
+  .route("/articles-trending-this-week")
+  .get(getArticlesTrendingThisWeek);
 
 articlesRouter
   .route("/:id")

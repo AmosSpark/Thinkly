@@ -22,6 +22,36 @@ dotenv.config();
  */
 
 const getArticles = getAll(Article);
+
+/*
+ * @route GET api/v1/mobile/articles/articles-trending-this-week
+ * @desc get top 10 trending articles
+ * @ascess public
+ */
+
+const getArticlesTrendingThisWeek = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const articlesThisWeek = await Article.getWeeklyTrending();
+
+    // check if there're new articles trending
+    if (articlesThisWeek.length === 0) {
+      res.status(200).json({
+        status: `success`,
+        message: `There are no new articles trending`,
+      });
+    }
+
+    res.status(200).json({
+      status: `success`,
+      result: articlesThisWeek.length,
+      totalDoc: await Article.countDocuments(),
+      data: {
+        data: articlesThisWeek,
+      },
+    });
+  }
+);
+
 /*
  * @route GET api/v1/mobile/articles/:id
  * @desc get an article
@@ -29,7 +59,7 @@ const getArticles = getAll(Article);
  */
 
 const getOneArticle = getOne(Article, {
-  path: "comments"
+  path: "comments",
 });
 
 /*
@@ -90,6 +120,7 @@ const deleteArticle = deleteOne(Article);
 
 export {
   getArticles,
+  getArticlesTrendingThisWeek,
   getOneArticle,
   postArticle,
   updateArticle,

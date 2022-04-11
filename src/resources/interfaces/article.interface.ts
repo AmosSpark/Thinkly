@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import { Model, Types } from "mongoose";
 
 interface IArticleDocument {
   title: string;
@@ -7,5 +7,8 @@ interface IArticleDocument {
   author?: Types.ObjectId;
   commentCount?: number;
 }
+interface IArticleModel extends Model<IArticleDocument> {
+  getWeeklyTrending: (this: Model<any>, ...args: any[]) => any;
+}
 
-export default IArticleDocument;
+export { IArticleDocument, IArticleModel };

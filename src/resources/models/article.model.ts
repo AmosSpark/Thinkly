@@ -1,6 +1,9 @@
 import { Schema, model, Query } from "mongoose";
 
-import IArticleDocument from "@/resources/interfaces/article.interface";
+import {
+  IArticleDocument,
+  IArticleModel,
+} from "@/resources/interfaces/article.interface";
 
 const ArticleSchema: Schema = new Schema(
   {
@@ -80,4 +83,52 @@ ArticleSchema.virtual("comments", {
   localField: "_id",
 });
 
-export default model<IArticleDocument>("Article", ArticleSchema);
+// Agregate Pipeline
+
+// Get begining date of a new week
+
+const getBeginningOfTheWeek = (now: any) => {
+  const days = (now.getDay() + 7 - 1) % 7;
+  now.setDate(now.getDate() - days);
+  now.setHours(0, 0, 0, 0);
+  return now;
+};
+
+/*
+ * @desc get weekly trending articles
+ * 'api/v1/articles/articles-trending-this-week'
+ */
+
+ArticleSchema.statics.getWeeklyTrending = async function () {
+  const trendingArticles = await this.aggregate([
+    {
+      $match: {
+        createdAt: {
+          $gte: getBeginningOfTheWeek(new Date()),
+        },
+      },
+    },
+    {
+      $sort: { noOfComments: -1 },
+    },
+    {
+      $project: {
+        body: 0,
+        updatedAt: 0,
+        __v: 0,
+      },
+    },
+    {
+      $limit: 10,
+    },
+  ]);
+
+  await this.populate(trendingArticles, {
+    path: "author",
+    select: "fullName headliness",
+  });
+
+  return trendingArticles;
+};
+
+export default model<IArticleDocument, IArticleModel>("Article", ArticleSchema);
