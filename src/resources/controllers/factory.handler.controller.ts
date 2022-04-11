@@ -46,7 +46,7 @@ const getAll = (Model: Model<any>, popOptions?: any) =>
 
     let pageNo: string;
 
-    const totalPage: number = (await Model.countDocuments()) / 10;
+    const totalPage: number = Math.ceil((await Model.countDocuments()) / 10);
 
     req.query.page
       ? (pageNo = req.query.page + "/" + String(totalPage))
