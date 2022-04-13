@@ -69,19 +69,39 @@ const getAll = (Model: Model<any>, popOptions?: any) =>
 
 const getOne = (Model: Model<any>, popOptions?: any) =>
   catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    // implement access control
+    // 1 - Select document
     const id = req.params.id;
-    let query = Model.findById(id);
-    if (popOptions) query = query.populate(popOptions);
-    const doc = await query;
-
+    const doc = await Model.findById(id);
+    // 2- validate
     if (!doc) {
-      return next(new AppError(`Document with 'id': ${id} not found`, 404));
+      return next(new AppError(`Document with id: ${id} not found`, 404));
     }
+
+    if (doc.bookmarkedBy) {
+      if (
+        String(doc.bookmarkedBy._id) !== req.user.id &&
+        req.user.role != "admin"
+      ) {
+        return next(
+          new AppError(
+            `Unauthorized Request: You can only get your own bookmark`,
+            401
+          )
+        );
+      }
+    }
+
+    // get document
+
+    let query = Model.findById(doc.id);
+    if (popOptions) query = query.populate(popOptions);
+    const getDoc = await query;
 
     return res.status(200).json({
       status: `success`,
       data: {
-        data: doc,
+        data: getDoc,
       },
     });
   });
@@ -92,22 +112,48 @@ const getOne = (Model: Model<any>, popOptions?: any) =>
 
 const updateOne = (Model: Model<any>) =>
   catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const id = req.params.id,
-      body = req.body;
+    // implement access control
+    // 1 - Select document
+    const id = req.params.id;
+    const doc = await Model.findById(id);
+    // 2- validate
+    if (!doc) {
+      return next(new AppError(`Document with id: ${id} not found`, 404));
+    }
 
-    const doc = await Model.findByIdAndUpdate(id, body, {
+    if (doc.commentBy) {
+      if (doc.commentBy.id !== req.user.id && req.user.role != "admin") {
+        return next(
+          new AppError(
+            `Unauthorized Request: You can only update your own comment`,
+            401
+          )
+        );
+      }
+    } else if (doc.body) {
+      if (doc.author.id !== req.user.id && req.user.role != "admin") {
+        return next(
+          new AppError(
+            `Unauthorized Request: You can only update your own article`,
+            401
+          )
+        );
+      }
+    }
+
+    // update document
+
+    const body = req.body;
+
+    const updateDoc = await Model.findByIdAndUpdate(doc.id, body, {
       new: true,
       runValidator: true,
     });
 
-    if (!doc) {
-      return next(new AppError(`Document with 'id': ${id} not found`, 404));
-    }
-
     res.status(200).json({
       status: `success`,
       data: {
-        data: doc,
+        data: updateDoc,
       },
     });
   });
@@ -118,12 +164,50 @@ const updateOne = (Model: Model<any>) =>
 
 const deleteOne = (Model: Model<any>) =>
   catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    // implement access control
+    // 1 - Select document
     const id = req.params.id;
-    const doc = await Model.findByIdAndDelete(id);
-
+    const doc = await Model.findById(id);
+    // 2- validate
     if (!doc) {
       return next(new AppError(`Document with id: ${id} not found`, 404));
     }
+
+    if (doc.commentBy) {
+      if (doc.commentBy.id !== req.user.id && req.user.role != "admin") {
+        return next(
+          new AppError(
+            `Unauthorized Request: You can only delete your own comment`,
+            401
+          )
+        );
+      }
+    } else if (doc.bookmarkedBy) {
+      if (
+        String(doc.bookmarkedBy._id) !== req.user.id &&
+        req.user.role != "admin"
+      ) {
+        return next(
+          new AppError(
+            `Unauthorized Request: Ysou can only delete your own bookmark`,
+            401
+          )
+        );
+      }
+    } else if (doc.body) {
+      if (doc.author.id !== req.user.id && req.user.role != "admin") {
+        return next(
+          new AppError(
+            `Unauthorized Request: You can only delete your own article`,
+            401
+          )
+        );
+      }
+    }
+
+    // delete document
+
+    await Model.findByIdAndDelete(doc.id);
 
     res.status(204).json();
   });
