@@ -29,7 +29,7 @@ const getAll = (Model: Model<any>, popOptions?: any) =>
   catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     // To allow for nested GET coments on article
     let filter = {};
-    if (req.params.articleId) filter = { article: req.params.articleId };
+    if (req.params.id) filter = { article: req.params.id };
     // Execute query
     const queryFeatures = new QueryFeatures(
       Model.find(filter).populate(popOptions),
