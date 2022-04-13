@@ -6,7 +6,6 @@ import {
 } from "@/resources/controllers/auth.controller";
 
 import {
-  getBookmarks,
   postBookmark,
   getOneBookmark,
   deleteBookmark,
@@ -16,7 +15,6 @@ const bookmarksRouter = Router({ mergeParams: true }) as Express;
 
 bookmarksRouter
   .route("/")
-  .get(protectRoute, restrictTo("admin"), getBookmarks)
   .post(protectRoute, restrictTo("user", "admin"), postBookmark);
 
 bookmarksRouter

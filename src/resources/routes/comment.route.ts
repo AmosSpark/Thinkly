@@ -1,12 +1,8 @@
 import { Router, Express } from "express";
 
-import {
-  protectRoute,
-  restrictTo,
-} from "@/resources/controllers/auth.controller";
+import { protectRoute } from "@/resources/controllers/auth.controller";
 
 import {
-  getComments,
   postComment,
   getOneComment,
   updateComment,
@@ -15,15 +11,14 @@ import {
 
 const commentsRouter = Router({ mergeParams: true }) as Express;
 
-commentsRouter
-  .route("/")
-  .get(protectRoute, restrictTo("admin"), getComments)
-  .post(protectRoute, restrictTo("user", "admin"), postComment);
+commentsRouter.use(protectRoute); // protect all routes below - allow only loggedin users
+
+commentsRouter.route("/").post(postComment);
 
 commentsRouter
   .route("/:id")
-  .get(protectRoute, getOneComment)
-  .patch(protectRoute, restrictTo("user", "admin"), updateComment)
-  .delete(protectRoute, restrictTo("user", "admin"), deleteComment);
+  .get(getOneComment)
+  .patch(updateComment)
+  .delete(deleteComment);
 
 export { commentsRouter };

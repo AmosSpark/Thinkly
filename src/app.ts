@@ -9,6 +9,7 @@ import compression from "compression";
 import globalError from "@/middleware/global-error.middleware";
 import {
   usersRouter,
+  adminRouter,
   articlesRouter,
   commentsRouter,
   bookmarksRouter,
@@ -37,8 +38,9 @@ app.use(compression());
 app.use(express.urlencoded({ extended: false }));
 
 // routes
-app.use("/api/v1/mobile", usersRouter);
 app.use("/api/v1/mobile/articles", articlesRouter);
+app.use("/api/v1/mobile", usersRouter);
+app.use("/api/v1/mobile/admin", adminRouter);
 app.use("/api/v1/mobile/comments", commentsRouter);
 app.use("/api/v1/mobile/bookmarks", bookmarksRouter);
 
