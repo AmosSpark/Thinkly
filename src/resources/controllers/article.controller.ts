@@ -1,10 +1,8 @@
 import { Response, Request, NextFunction } from "express";
 
-import jwt from "jsonwebtoken";
+import currentUser from "@/utils/current-usser.utils";
 import catchAsync from "@/utils/catch-async.utils";
-import AppError from "@/utils/app-error.utils";
 import Article from "@/resources/models/article.model";
-import User from "@/resources/models/user.model";
 import {
   getAll,
   getOne,
@@ -70,34 +68,25 @@ const getOneArticle = getOne(Article, {
 
 const postArticle = catchAsync(
   async (req: Request | any, res: Response, next: NextFunction) => {
-    // get user
-    const JWT_SECRET = String(process.env.JWT_SECRET);
-    const token = req.headers.authorization.split(" ")[1];
-    jwt.verify(token, JWT_SECRET, async (err: any, decoded: any) => {
-      if (err) return err;
-      const user = await User.findById(decoded.id);
-      req.user = user;
+    // get current user
+    req.user = await currentUser(
+      req.headers.authorization.split(" ")[1],
+      String(process.env.JWT_SECRET)
+    )();
 
-      try {
-        // create article
-        const newArticle = await Article.create({
-          title: req.body.title,
-          category: req.body.category,
-          body: req.body.body,
-          author: req.user.id,
-        });
+    // create article
+    const newArticle = await Article.create({
+      title: req.body.title,
+      category: req.body.category,
+      body: req.body.body,
+      author: req.user.id,
+    });
 
-        return res.status(201).json({
-          status: `success`,
-          data: {
-            data: newArticle,
-          },
-        });
-      } catch (error: any) {
-        console.log(error);
-        return next(new AppError(error.message, 400));
-      }
-      next();
+    return res.status(201).json({
+      status: `success`,
+      data: {
+        data: newArticle,
+      },
     });
   }
 );

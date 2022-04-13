@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 
+import currentUser from "@/utils/current-usser.utils";
 import byctypt from "bcrypt";
+import { promisify } from "util";
 import jwt from "jsonwebtoken";
 import { createSendToken } from "@/middleware/token.middleware";
 import catchAsync from "@/utils/catch-async.utils";
@@ -144,46 +146,40 @@ const protectRoute = catchAsync(
 
     // verify token
     const JWT_SECRET = String(process.env.JWT_SECRET);
-    // const decoded = await promisify(jwt.verify)(token, JWT_SECRET);
+    // @ts-ignore
+    const decoded = await promisify(jwt.verify)(token, JWT_SECRET);
+    // @ts-ignore
+    const freshUser = await User.findById(decoded.id);
 
-    jwt.verify(token, JWT_SECRET, async function (err: any, decoded: any) {
-      if (err) {
-        return next(
-          new AppError(`Unauthorized request: Please login again`, 401)
-        );
-      }
-      const freshUser = await User.findById(decoded.id);
-
-      if (!freshUser) {
-        return next(new AppError(`This user no longer exist`, 401));
-      }
-      // GRANT USER ACCESS TO PROTECTED ROUTE
-      req.user = freshUser;
-    });
-
+    if (!freshUser) {
+      return next(new AppError(`This user no longer exist`, 401));
+    }
+    // GRANT USER ACCESS TO PROTECTED ROUTE
+    req.user = freshUser;
+    res.locals.user = freshUser;
     next();
   }
 );
 
+/*
+ * @desc restric protected routes
+ */
+
 const restrictTo = (...roles: string[]) => {
-  return (req: Request | any, res: Response, next: NextFunction) => {
-    // get user
-    const JWT_SECRET = String(process.env.JWT_SECRET);
-    const token = req.headers.authorization.split(" ")[1];
+  return async (req: Request | any, res: Response, next: NextFunction) => {
+    // get current user
+    req.user = await currentUser(
+      req.headers.authorization.split(" ")[1],
+      String(process.env.JWT_SECRET)
+    )();
 
-    jwt.verify(token, JWT_SECRET, async (err: any, decoded: any) => {
-      if (err) return err;
-      const user = await User.findById(decoded.id);
-      req.user = user;
-      // check for roles
-      if (!roles.includes(req.user.role)) {
-        return next(
-          new AppError("You do not have permission to perform this action", 403)
-        );
-      }
-
-      next();
-    });
+    // check for roles
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError("You do not have permission to perform this action", 403)
+      );
+    }
+    next();
   };
 };
 

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 
-import jwt from "jsonwebtoken";
+import currentUser from "@/utils/current-usser.utils";
 import User from "@/resources/models/user.model";
 import {
   getAll,
@@ -41,18 +41,15 @@ const getAuser = getOne(User, {
 
 const getUserProfile = catchAsync(
   async (req: Request | any, res: Response, next: NextFunction) => {
-    // get user
-    const JWT_SECRET = String(process.env.JWT_SECRET);
-    const token = req.headers.authorization.split(" ")[1];
+    // get current user
+    req.user = await currentUser(
+      req.headers.authorization.split(" ")[1],
+      String(process.env.JWT_SECRET)
+    )();
+    // set params to user id
+    req.params.id = req.user.id;
 
-    jwt.verify(token, JWT_SECRET, async (err: any, decoded: any) => {
-      if (err) return err;
-      const user = await User.findById(decoded.id);
-      req.user = user;
-      // assign id to params
-      req.params.id = req.user.id;
-      next();
-    });
+    next();
   }
 );
 
@@ -91,42 +88,36 @@ const updateUserProfile = catchAsync(
       );
     }
 
-    // get user
-    const JWT_SECRET = String(process.env.JWT_SECRET);
-    const token = req.headers.authorization.split(" ")[1];
+    // get current user
+    req.user = await currentUser(
+      req.headers.authorization.split(" ")[1],
+      String(process.env.JWT_SECRET)
+    )();
 
-    jwt.verify(token, JWT_SECRET, async (err: any, decoded: any) => {
-      if (err) return err;
-      const user = await User.findById(decoded.id);
-      req.user = user;
+    // update document
+    // 1 - only allow field names that should be updated
+    const filteredBody: object = filterFields(
+      req.body,
+      "fullName",
+      "email",
+      "headline",
+      "bio"
+    );
+    // 2 - validate and update
+    const foundUserAndUpdate = await User.findByIdAndUpdate(
+      req.user.id,
+      filteredBody,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
-      // update document
-      // 1 - only allow field names that should be updated
-      const filteredBody: object = filterFields(
-        req.body,
-        "fullName",
-        "email",
-        "headline",
-        "bio"
-      );
-      // 2 - validate and update
-      const foundUserAndUpdate = await User.findByIdAndUpdate(
-        req.user.id,
-        filteredBody,
-        {
-          new: true,
-          runValidators: true,
-        }
-      );
-
-      res.status(200).json({
-        data: {
-          status: `success`,
-          data: foundUserAndUpdate,
-        },
-      });
-
-      next();
+    res.status(200).json({
+      data: {
+        status: `success`,
+        data: foundUserAndUpdate,
+      },
     });
   }
 );
@@ -155,27 +146,21 @@ const deleteAuser = deleteOne(User);
 
 const deactivateMyAccount = catchAsync(
   async (req: Request | any, res: Response, next: NextFunction) => {
-    // get user
-    const JWT_SECRET = String(process.env.JWT_SECRET);
-    const token = req.headers.authorization.split(" ")[1];
+    // get current user
+    req.user = await currentUser(
+      req.headers.authorization.split(" ")[1],
+      String(process.env.JWT_SECRET)
+    )();
+    // deactivate found user
+    await User.findByIdAndUpdate(req.user.id, {
+      active: false,
+    });
 
-    jwt.verify(token, JWT_SECRET, async (err: any, decoded: any) => {
-      if (err) return err;
-      const user = await User.findById(decoded.id);
-      req.user = user;
-      // deactivate found user
-      await User.findByIdAndUpdate(req.user.id, {
-        active: false,
-      });
-
-      res.status(204).json({
-        data: {
-          status: `success`,
-          data: null,
-        },
-      });
-
-      next();
+    res.status(204).json({
+      data: {
+        status: `success`,
+        data: null,
+      },
     });
   }
 );

@@ -1,14 +1,11 @@
 import { Response, Request, NextFunction } from "express";
 
-import jwt from "jsonwebtoken";
+import currentUser from "@/utils/current-usser.utils";
 import catchAsync from "@/utils/catch-async.utils";
-import AppError from "@/utils/app-error.utils";
-import User from "@/resources/models/user.model";
 import Bookmark from "@/resources/models/bookmark.model";
 import {
   getAll,
   getOne,
-  updateOne,
   deleteOne,
 } from "@/resources/controllers/factory.handler.controller";
 import * as dotenv from "dotenv";
@@ -31,31 +28,23 @@ const getBookmarks = getAll(Bookmark);
 
 const postBookmark = catchAsync(
   async (req: Request | any, res: Response, next: NextFunction) => {
-    // get user
-    const JWT_SECRET = String(process.env.JWT_SECRET);
-    const token = req.headers.authorization.split(" ")[1];
-    jwt.verify(token, JWT_SECRET, async (err: any, decoded: any) => {
-      if (err) return err;
-      const user = await User.findById(decoded.id);
-      req.user = user;
+    // get current user
+    req.user = await currentUser(
+      req.headers.authorization.split(" ")[1],
+      String(process.env.JWT_SECRET)
+    )();
 
-      try {
-        // create bookmark
-        const newBookmark = await Bookmark.create({
-          article: req.params.id,
-          bookmarkedBy: req.user.id,
-        });
+    // create bookmark
+    const newBookmark = await Bookmark.create({
+      article: req.params.id,
+      bookmarkedBy: req.user.id,
+    });
 
-        res.status(201).json({
-          status: `success`,
-          data: {
-            data: newBookmark,
-          },
-        });
-      } catch (error: any) {
-        return next(new AppError(error.message, 400));
-      }
-      next();
+    res.status(201).json({
+      status: `success`,
+      data: {
+        data: newBookmark,
+      },
     });
   }
 );

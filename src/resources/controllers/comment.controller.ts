@@ -1,9 +1,7 @@
 import { Response, Request, NextFunction } from "express";
 
-import jwt from "jsonwebtoken";
+import currentUser from "@/utils/current-usser.utils";
 import catchAsync from "@/utils/catch-async.utils";
-import AppError from "@/utils/app-error.utils";
-import User from "@/resources/models/user.model";
 import Comment from "@/resources/models/comment.model";
 import {
   getAll,
@@ -26,40 +24,25 @@ const getComments = getAll(Comment, {
   select: "-body -author -noOfComments -createdAt -updatedAt",
 });
 
-/*
- * @route POST api/v1/mobile/articles:articleId/comments
- * @desc post a comment
- * @ascess private
- */
-
 const postComment = catchAsync(
   async (req: Request | any, res: Response, next: NextFunction) => {
-    // get user
-    const JWT_SECRET = String(process.env.JWT_SECRET);
-    const token = req.headers.authorization.split(" ")[1];
-    jwt.verify(token, JWT_SECRET, async (err: any, decoded: any) => {
-      if (err) return err;
-      const user = await User.findById(decoded.id);
-      req.user = user;
+    // get current user
+    req.user = await currentUser(
+      req.headers.authorization.split(" ")[1],
+      String(process.env.JWT_SECRET)
+    )();
+    // create comment
+    const newComment = await Comment.create({
+      article: req.params.id,
+      commentBy: req.user.id,
+      comment: req.body.comment,
+    });
 
-      try {
-        // create comment
-        const newComment = await Comment.create({
-          article: req.params.id,
-          commentBy: req.user.id,
-          comment: req.body.comment,
-        });
-
-        res.status(201).json({
-          status: `success`,
-          data: {
-            data: newComment,
-          },
-        });
-      } catch (error: any) {
-        return next(new AppError(error.message, 400));
-      }
-      next();
+    res.status(201).json({
+      status: `success`,
+      data: {
+        data: newComment,
+      },
     });
   }
 );
