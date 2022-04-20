@@ -1,5 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 
+import {
+  cloudinary,
+  userDefaultPhoto,
+  uploadPhotoToCloudinary,
+} from "@/utils/cloudinary.utils";
 import currentUser from "@/utils/current-usser.utils";
 import User from "@/resources/models/user.model";
 import {
@@ -94,15 +99,27 @@ const updateUserProfile = catchAsync(
       String(process.env.JWT_SECRET)
     )();
 
+    // upload user photo
+    const result = await uploadPhotoToCloudinary(req.file.buffer, "Users");
+
     // update document
     // 1 - only allow field names that should be updated
     const filteredBody: object = filterFields(
       req.body,
       "fullName",
       "email",
+      "photo",
+      "photoId",
       "headline",
       "bio"
     );
+
+    if (req.file)
+      // @ts-ignore: Property 'photo' does not exist on type 'object'
+      filteredBody.photo = result.secure_url;
+    // @ts-ignore: Property 'photo' does not exist on type 'object'
+    filteredBody.photoId = result.public_id.slice(6);
+
     // 2 - validate and update
     const foundUserAndUpdate = await User.findByIdAndUpdate(
       req.user.id,
@@ -117,6 +134,46 @@ const updateUserProfile = catchAsync(
       data: {
         status: `success`,
         data: foundUserAndUpdate,
+      },
+    });
+  }
+);
+
+/*
+ * @route DELETE api/v1/mobile/users/me/remove-profile-photo
+ * @desc remove profile photo of user
+ * @ascess private (user)
+ */
+
+const removeUserProfilePhoto = catchAsync(
+  async (req: Request | any, res: Response, next: NextFunction) => {
+    // get current user
+    req.user = await currentUser(
+      req.headers.authorization.split(" ")[1],
+      String(process.env.JWT_SECRET)
+    )();
+
+    // get user document
+    let user = await User.findById(req.user.id);
+
+    // remove user photo from cloudinary
+    const removePhoto = await cloudinary.uploader.destroy(
+      `Users/${req.user.photoId}`
+    );
+    //  reset user default photo
+    if (removePhoto) {
+      // @ts-ignore: Type "LeanDocument" is not assignable to type "Document"...
+      user = user.toObject();
+      if (user) {
+        user.photo = userDefaultPhoto;
+        delete user.photoId;
+      }
+    }
+
+    res.status(200).json({
+      data: {
+        status: `success`,
+        data: user,
       },
     });
   }
@@ -170,6 +227,7 @@ export {
   getAuser,
   getUserProfile,
   updateUserProfile,
+  removeUserProfilePhoto,
   updateAuser,
   deleteAuser,
   deactivateMyAccount,

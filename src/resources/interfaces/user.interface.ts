@@ -2,6 +2,8 @@ interface IUserDocument {
   fullName: string;
   email: string;
   password: string;
+  photo?: string;
+  photoId?: string;
   headline?: string;
   bio?: string;
   role?: string;
