@@ -99,9 +99,6 @@ const updateUserProfile = catchAsync(
       String(process.env.JWT_SECRET)
     )();
 
-    // upload user photo
-    const result = await uploadPhotoToCloudinary(req.file.buffer, "Users");
-
     // update document
     // 1 - only allow field names that should be updated
     const filteredBody: object = filterFields(
@@ -114,11 +111,14 @@ const updateUserProfile = catchAsync(
       "bio"
     );
 
-    if (req.file)
+    if (req.file) {
+      // upload user photo
+      const result = await uploadPhotoToCloudinary(req.file.buffer, "Users");
       // @ts-ignore: Property 'photo' does not exist on type 'object'
       filteredBody.photo = result.secure_url;
-    // @ts-ignore: Property 'photo' does not exist on type 'object'
-    filteredBody.photoId = result.public_id.slice(6);
+      // @ts-ignore: Property 'photo' does not exist on type 'object'
+      filteredBody.photoId = result.public_id.slice(6);
+    }
 
     // 2 - validate and update
     const foundUserAndUpdate = await User.findByIdAndUpdate(
@@ -162,12 +162,15 @@ const removeUserProfilePhoto = catchAsync(
     );
     //  reset user default photo
     if (removePhoto) {
-      // @ts-ignore: Type "LeanDocument" is not assignable to type "Document"...
-      user = user.toObject();
-      if (user) {
-        user.photo = userDefaultPhoto;
-        delete user.photoId;
-      }
+      const body = {
+        photo: userDefaultPhoto,
+        photoId: "",
+      };
+
+      user = await User.findByIdAndUpdate(req.user.id, body, {
+        new: true,
+        runValidators: true,
+      });
     }
 
     res.status(200).json({
