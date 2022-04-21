@@ -24,8 +24,6 @@ const uploadPhotoToCloudinary = (
         folder: folderName,
         transformation: [
           {
-            width: 500,
-            height: 500,
             quality: 90,
           },
         ],

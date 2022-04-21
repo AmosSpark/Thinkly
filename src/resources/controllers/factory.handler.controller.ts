@@ -1,5 +1,6 @@
 import { Response, Request, NextFunction } from "express";
 
+import { cloudinary, uploadPhotoToCloudinary } from "@/utils/cloudinary.utils";
 import { Model } from "mongoose";
 import catchAsync from "@/utils/catch-async.utils";
 import AppError from "@/utils/app-error.utils";
@@ -144,6 +145,16 @@ const updateOne = (Model: Model<any>) =>
     // update document
 
     const body = req.body;
+
+    //update cloudinary file/photo
+    if ((doc.body || doc.photoId) && req.file) {
+      // remove previous photo
+      await cloudinary.uploader.destroy(`Articles/${doc.photoId}`);
+      // upload new photo
+      const result = await uploadPhotoToCloudinary(req.file.buffer, "Articles");
+      body.photo = result.secure_url;
+      body.photoId = result.public_id.slice(9);
+    }
 
     const updateDoc = await Model.findByIdAndUpdate(doc.id, body, {
       new: true,
