@@ -5,6 +5,7 @@ interface IArticleDocument {
   category: string;
   body: string;
   author?: Types.ObjectId;
+  noOfLikes?: number;
   commentCount?: number;
 }
 interface IArticleModel extends Model<IArticleDocument> {

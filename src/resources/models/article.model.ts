@@ -39,6 +39,10 @@ const ArticleSchema: Schema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
+    noOfLikes: {
+      type: Number,
+      default: 0,
+    },
     noOfComments: {
       type: Number,
       default: 0,
