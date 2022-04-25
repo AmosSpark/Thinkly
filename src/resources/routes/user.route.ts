@@ -33,7 +33,7 @@ usersRouter.route("/users/me/change-password").patch(changePassword);
 usersRouter.route("/users/me/update-me").patch(uploadPhoto, updateUserProfile);
 usersRouter
   .route("/users/me/remove-profile-photo")
-  .delete(removeUserProfilePhoto);
+  .patch(removeUserProfilePhoto);
 
 usersRouter.route("/users/me/deactivate-account").delete(deactivateMyAccount);
 
