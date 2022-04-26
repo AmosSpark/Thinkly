@@ -112,7 +112,7 @@ const getOne = (Model: Model<any>, popOptions?: any) =>
  */
 
 const updateOne = (Model: Model<any>) =>
-  catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
     // implement access control
     // 1 - Select document
     const id = req.params.id;
