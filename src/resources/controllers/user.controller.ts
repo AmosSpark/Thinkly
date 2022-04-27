@@ -112,6 +112,11 @@ const updateUserProfile = catchAsync(
     );
 
     if (req.file) {
+      if (req.user.photoId !== "") {
+        // remove previous photo
+        // @ts-ignore: Property 'photoId' does not exist on type 'object'
+        await cloudinary.uploader.destroy(`Users/${req.user.photoId}`);
+      }
       // upload user photo
       const result = await uploadPhotoToCloudinary(req.file.buffer, "Users");
       // @ts-ignore: Property 'photo' does not exist on type 'object'
