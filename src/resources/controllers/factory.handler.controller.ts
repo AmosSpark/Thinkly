@@ -86,7 +86,7 @@ const getOne = (Model: Model<any>, popOptions?: any) =>
         return next(
           new AppError(
             `Unauthorized Request: You can only get your own bookmark`,
-            401
+            403
           )
         );
       }
@@ -126,7 +126,7 @@ const updateOne = (Model: Model<any>) =>
         return next(
           new AppError(
             `Unauthorized Request: You can only update your own comment`,
-            401
+            403
           )
         );
       }
@@ -135,7 +135,7 @@ const updateOne = (Model: Model<any>) =>
         return next(
           new AppError(
             `Unauthorized Request: You can only update your own article`,
-            401
+            403
           )
         );
       }
@@ -178,7 +178,7 @@ const deleteOne = (Model: Model<any>) =>
         return next(
           new AppError(
             `Unauthorized Request: You can only delete your own comment`,
-            401
+            403
           )
         );
       }
@@ -190,7 +190,7 @@ const deleteOne = (Model: Model<any>) =>
         return next(
           new AppError(
             `Unauthorized Request: Ysou can only delete your own bookmark`,
-            401
+            403
           )
         );
       }
@@ -199,7 +199,7 @@ const deleteOne = (Model: Model<any>) =>
         return next(
           new AppError(
             `Unauthorized Request: You can only delete your own article`,
-            401
+            403
           )
         );
       }
