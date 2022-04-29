@@ -18,7 +18,7 @@ dotenv.config();
  * @ascess private
  */
 
-const getLikePost = getAll(Like);
+const getLikes = getAll(Like);
 
 /*
  * @route POST api/v1/mobile/articles:articleId/likes
@@ -59,4 +59,4 @@ const getOneLike = getOne(Like);
 
 const deleteLikePost = deleteOne(Like);
 
-export { getLikePost, postLikePost, getOneLike, deleteLikePost };
+export { getLikes, postLikePost, getOneLike, deleteLikePost };

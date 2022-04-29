@@ -1,9 +1,12 @@
 import { Router, Express } from "express";
 
-import { protectRoute } from "@/resources/controllers/auth.controller";
+import {
+  protectRoute,
+  restrictTo,
+} from "@/resources/controllers/auth.controller";
 
 import {
-  getLikePost,
+  getLikes,
   postLikePost,
   getOneLike,
   deleteLikePost,
@@ -13,8 +16,14 @@ const likesRouter = Router({ mergeParams: true }) as Express;
 
 likesRouter.use(protectRoute); // protect all routes below
 
-likesRouter.route("/").get(getLikePost).post(postLikePost);
+likesRouter.route("/").get(restrictTo("admin"), getLikes).post(postLikePost);
 
-likesRouter.route("/:id").get(getOneLike).delete(deleteLikePost);
+
+likesRouter
+  .route("/:id")
+  .get(restrictTo("admin"), getOneLike)
+  .delete(deleteLikePost);
+
+likesRouter.route("/:id").delete(deleteLikePost);
 
 export { likesRouter };
