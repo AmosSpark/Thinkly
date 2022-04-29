@@ -1,7 +1,9 @@
 import { Response, Request, NextFunction } from "express";
 
+import { cloudinary, uploadPhotoToCloudinary } from "@/utils/cloudinary.utils";
 import currentUser from "@/utils/current-usser.utils";
 import catchAsync from "@/utils/catch-async.utils";
+import AppError from "@/utils/app-error.utils";
 import Article from "@/resources/models/article.model";
 import {
   getAll,
@@ -74,13 +76,24 @@ const postArticle = catchAsync(
       String(process.env.JWT_SECRET)
     )();
 
-    // create article
-    const newArticle = await Article.create({
+    const newArticle = new Article({
       title: req.body.title,
       category: req.body.category,
+      photo: "",
+      photoId: "",
       body: req.body.body,
       author: req.user.id,
     });
+
+    // upload article photo
+    if (req.file) {
+      const result = await uploadPhotoToCloudinary(req.file.buffer, "Articles");
+      newArticle.photo = result.secure_url;
+      newArticle.photoId = result.public_id.slice(9);
+    }
+
+    // save new article
+    await newArticle.save();
 
     return res.status(201).json({
       status: `success`,
@@ -100,6 +113,62 @@ const postArticle = catchAsync(
 const updateArticle = updateOne(Article);
 
 /*
+ * @route PATCH api/v1/mobile/articles/:id/remove-photo
+ * @desc remove article photo
+ * @ascess private
+ */
+
+const removeArticlePhoto = catchAsync(
+  async (req: Request | any, res: Response, next: NextFunction) => {
+    // get article document
+    let article = await Article.findById(req.params.id);
+
+    if (!article) {
+      return next(
+        new AppError(`Document with id: ${req.params.id} not found`, 404)
+      );
+    }
+
+    // Implement access-control
+    if (article.author) {
+      if (article.author.id !== req.user.id && req.user.role != "admin") {
+        return next(
+          new AppError(
+            `Forbiden Request: You can only delete photo of your own article`,
+            403
+          )
+        );
+      }
+    }
+
+    // remove article photo from cloudinary
+    const removePhoto = await cloudinary.uploader.destroy(
+      `Articles/${article.photoId}`
+    );
+
+    //  reset article default photo
+    if (removePhoto) {
+      const body = {
+        photo: "",
+        photoId: "",
+      };
+
+      article = await Article.findByIdAndUpdate(req.params.id, body, {
+        new: true,
+        runValidators: true,
+      });
+    }
+
+    res.status(200).json({
+      data: {
+        status: `success`,
+        data: article,
+      },
+    });
+  }
+);
+
+/*
  * @route DELETE api/v1/mobile/articles/:id
  * @desc delete an article
  * @ascess private
@@ -113,5 +182,6 @@ export {
   getOneArticle,
   postArticle,
   updateArticle,
+  removeArticlePhoto,
   deleteArticle,
 };

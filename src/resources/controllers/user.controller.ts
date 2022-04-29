@@ -1,5 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 
+import {
+  cloudinary,
+  userDefaultPhoto,
+  uploadPhotoToCloudinary,
+} from "@/utils/cloudinary.utils";
 import currentUser from "@/utils/current-usser.utils";
 import User from "@/resources/models/user.model";
 import {
@@ -100,9 +105,26 @@ const updateUserProfile = catchAsync(
       req.body,
       "fullName",
       "email",
+      "photo",
+      "photoId",
       "headline",
       "bio"
     );
+
+    if (req.file) {
+      if (req.user.photoId !== "") {
+        // remove previous photo
+        // @ts-ignore: Property 'photoId' does not exist on type 'object'
+        await cloudinary.uploader.destroy(`Users/${req.user.photoId}`);
+      }
+      // upload user photo
+      const result = await uploadPhotoToCloudinary(req.file.buffer, "Users");
+      // @ts-ignore: Property 'photo' does not exist on type 'object'
+      filteredBody.photo = result.secure_url;
+      // @ts-ignore: Property 'photo' does not exist on type 'object'
+      filteredBody.photoId = result.public_id.slice(6);
+    }
+
     // 2 - validate and update
     const foundUserAndUpdate = await User.findByIdAndUpdate(
       req.user.id,
@@ -117,6 +139,49 @@ const updateUserProfile = catchAsync(
       data: {
         status: `success`,
         data: foundUserAndUpdate,
+      },
+    });
+  }
+);
+
+/*
+ * @route DELETE api/v1/mobile/users/me/remove-profile-photo
+ * @desc remove profile photo of user
+ * @ascess private (user)
+ */
+
+const removeUserProfilePhoto = catchAsync(
+  async (req: Request | any, res: Response, next: NextFunction) => {
+    // get current user
+    req.user = await currentUser(
+      req.headers.authorization.split(" ")[1],
+      String(process.env.JWT_SECRET)
+    )();
+
+    // get user document
+    let user = await User.findById(req.user.id);
+
+    // remove user photo from cloudinary
+    const removePhoto = await cloudinary.uploader.destroy(
+      `Users/${req.user.photoId}`
+    );
+    //  reset user default photo
+    if (removePhoto) {
+      const body = {
+        photo: userDefaultPhoto,
+        photoId: "",
+      };
+
+      user = await User.findByIdAndUpdate(req.user.id, body, {
+        new: true,
+        runValidators: true,
+      });
+    }
+
+    res.status(200).json({
+      data: {
+        status: `success`,
+        data: user,
       },
     });
   }
@@ -170,6 +235,7 @@ export {
   getAuser,
   getUserProfile,
   updateUserProfile,
+  removeUserProfilePhoto,
   updateAuser,
   deleteAuser,
   deactivateMyAccount,

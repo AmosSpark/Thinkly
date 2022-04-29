@@ -1,5 +1,6 @@
 import { Response, Request, NextFunction } from "express";
 
+import { cloudinary, uploadPhotoToCloudinary } from "@/utils/cloudinary.utils";
 import { Model } from "mongoose";
 import catchAsync from "@/utils/catch-async.utils";
 import AppError from "@/utils/app-error.utils";
@@ -86,7 +87,7 @@ const getOne = (Model: Model<any>, popOptions?: any) =>
         return next(
           new AppError(
             `Unauthorized Request: You can only get your own bookmark`,
-            401
+            403
           )
         );
       }
@@ -111,7 +112,7 @@ const getOne = (Model: Model<any>, popOptions?: any) =>
  */
 
 const updateOne = (Model: Model<any>) =>
-  catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
     // implement access control
     // 1 - Select document
     const id = req.params.id;
@@ -126,7 +127,7 @@ const updateOne = (Model: Model<any>) =>
         return next(
           new AppError(
             `Unauthorized Request: You can only update your own comment`,
-            401
+            403
           )
         );
       }
@@ -135,7 +136,7 @@ const updateOne = (Model: Model<any>) =>
         return next(
           new AppError(
             `Unauthorized Request: You can only update your own article`,
-            401
+            403
           )
         );
       }
@@ -144,6 +145,16 @@ const updateOne = (Model: Model<any>) =>
     // update document
 
     const body = req.body;
+
+    //update cloudinary file/photo
+    if ((doc.body || doc.photoId) && req.file) {
+      // remove previous photo
+      await cloudinary.uploader.destroy(`Articles/${doc.photoId}`);
+      // upload new photo
+      const result = await uploadPhotoToCloudinary(req.file.buffer, "Articles");
+      body.photo = result.secure_url;
+      body.photoId = result.public_id.slice(9);
+    }
 
     const updateDoc = await Model.findByIdAndUpdate(doc.id, body, {
       new: true,
@@ -178,7 +189,7 @@ const deleteOne = (Model: Model<any>) =>
         return next(
           new AppError(
             `Unauthorized Request: You can only delete your own comment`,
-            401
+            403
           )
         );
       }
@@ -190,7 +201,7 @@ const deleteOne = (Model: Model<any>) =>
         return next(
           new AppError(
             `Unauthorized Request: Ysou can only delete your own bookmark`,
-            401
+            403
           )
         );
       }
@@ -199,7 +210,7 @@ const deleteOne = (Model: Model<any>) =>
         return next(
           new AppError(
             `Unauthorized Request: You can only delete your own article`,
-            401
+            403
           )
         );
       }

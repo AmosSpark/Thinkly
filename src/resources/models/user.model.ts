@@ -3,6 +3,7 @@ import { Schema, model } from "mongoose";
 import bcrypt from "bcrypt";
 import validator from "validator";
 import { IUserDocument } from "@/resources/interfaces/user.interface";
+import { userDefaultPhoto } from "@/utils/cloudinary.utils";
 
 const UserSchema: Schema = new Schema(
   {
@@ -38,6 +39,13 @@ const UserSchema: Schema = new Schema(
       required: [true, `Please provide a password`],
       select: false,
       minlength: [8, "Password cannot be less than 8 characters"],
+    },
+    photo: {
+      type: String,
+      default: userDefaultPhoto,
+    },
+    photoId: {
+      type: String,
     },
     headline: {
       type: String,

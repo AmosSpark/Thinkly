@@ -31,6 +31,12 @@ const ArticleSchema: Schema = new Schema(
       trim: true,
       uppercase: true,
     },
+    photo: {
+      type: String,
+    },
+    photoId: {
+      type: String,
+    },
     body: {
       type: String,
       required: [true, "Cannot publish an empty article"],

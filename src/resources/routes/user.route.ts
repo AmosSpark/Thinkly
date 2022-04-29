@@ -11,9 +11,12 @@ import {
 import {
   getUserProfile,
   updateUserProfile,
+  removeUserProfilePhoto,
   getAuser,
   deactivateMyAccount,
 } from "@/resources/controllers/user.controller";
+
+import uploadPhoto from "@/utils/multer.utils";
 
 const usersRouter = Router() as Express;
 
@@ -27,7 +30,10 @@ usersRouter.route("/users/me").get(getUserProfile, getAuser);
 
 usersRouter.route("/users/me/change-password").patch(changePassword);
 
-usersRouter.route("/users/me/update-me").patch(updateUserProfile);
+usersRouter.route("/users/me/update-me").patch(uploadPhoto, updateUserProfile);
+usersRouter
+  .route("/users/me/remove-profile-photo")
+  .patch(removeUserProfilePhoto);
 
 usersRouter.route("/users/me/deactivate-account").delete(deactivateMyAccount);
 
