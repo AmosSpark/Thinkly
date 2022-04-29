@@ -45,6 +45,12 @@ const ArticleSchema: Schema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
+    likedBy: {
+      type: [Schema.Types.ObjectId],
+      ref: "User",
+      default: [],
+      select: false,
+    },
     noOfLikes: {
       type: Number,
       default: 0,
@@ -94,6 +100,23 @@ ArticleSchema.virtual("comments", {
 });
 
 // Agregate Pipeline
+
+ArticleSchema.statics.getLikesOfArticles = async function () {
+  return await this.aggregate([
+    // {
+    //   $match: { article: articleId },
+    // },
+    {
+      $project: {
+        title: 1,
+        category: 1,
+        author: 1,
+        noOfLikes: 1,
+        likedBy: 1,
+      },
+    },
+  ]);
+};
 
 // Get begining date of a new week
 

@@ -200,7 +200,7 @@ const deleteOne = (Model: Model<any>) =>
       ) {
         return next(
           new AppError(
-            `Unauthorized Request: Ysou can only delete your own bookmark`,
+            `Unauthorized Request: You can only delete your own bookmark`,
             403
           )
         );

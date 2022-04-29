@@ -13,7 +13,6 @@ import {
   articlesRouter,
   commentsRouter,
   bookmarksRouter,
-  likesRouter
 } from "@/resources/routes";
 import unhandledRoutes from "@/resources/controllers/unhandled-error.controller";
 
@@ -44,7 +43,6 @@ app.use("/api/v1/mobile", usersRouter);
 app.use("/api/v1/mobile/admin", adminRouter);
 app.use("/api/v1/mobile/comments", commentsRouter);
 app.use("/api/v1/mobile/bookmarks", bookmarksRouter);
-app.use("/api/v1/mobile/likes", likesRouter);
 
 // unhandled routes
 app.all("*", unhandledRoutes);
