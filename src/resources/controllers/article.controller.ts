@@ -113,6 +113,102 @@ const postArticle = catchAsync(
 const updateArticle = updateOne(Article);
 
 /*
+ * @route PATCH api/v1/mobile/articles/:id/like-toggle-unlike
+ * @desc like/unlike an article
+ * @ascess private
+ */
+
+const toggleArticleLikeUnlike = catchAsync(
+  async (req: Request | any, res: Response, next: NextFunction) => {
+    // get current user
+    req.user = await currentUser(
+      req.headers.authorization.split(" ")[1],
+      String(process.env.JWT_SECRET)
+    )();
+
+    // get article
+    const article = await Article.findById(req.params.id).select("likedBy");
+
+    if (!article) {
+      return next(
+        new AppError(`Document with id: ${req.params.id} not found`, 404)
+      );
+    }
+
+    // 1 - if article is not liked by user - then like
+    if (!article.likedBy?.includes(req.user._id)) {
+      // A - push user to like property
+      await article.updateOne({
+        $push: { likedBy: req.user.id },
+      });
+      // B - get updated article - so as to get number of likes
+      const getUpdatedArticle = await Article.findById(req.params.id).select(
+        "likedBy"
+      );
+
+      // C - set number of likes to updated article
+      await getUpdatedArticle?.updateOne({
+        noOfLikes: getUpdatedArticle.likedBy?.length,
+      });
+
+      res.status(200).json({
+        status: `success`,
+        message: `Article now liked`,
+      });
+    } else {
+      // 2 - if article is already liked by user - then unlike
+      // A - remove user to like property
+      await article.updateOne({
+        $pull: { likedBy: req.user.id },
+      });
+
+      // B - get updated article - so as to get number of likes
+      const getUpdatedArticle = await Article.findById(req.params.id).select(
+        "likedBy"
+      );
+
+      // C - set number of likes to updated article
+      await getUpdatedArticle?.updateOne({
+        noOfLikes: getUpdatedArticle.likedBy?.length,
+      });
+
+      res.status(200).json({
+        status: `success`,
+        message: `Article now unliked`,
+      });
+    }
+  }
+);
+
+/*
+ * @route PATCH api/v1/mobile/articles/:id/likes
+ * @desc get no of likes of article
+ * @ascess private
+ */
+
+const getLikesOfAnArticle = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    // load aggregate pipeline
+    const articleLikes = await Article.getLikesOfArticles(req.params.id);
+
+    // populate likedBy property
+    const populateArticleLikes = await Article.populate(articleLikes, {
+      path: "author likedBy",
+      select: { fullName: 1, headline: 1 },
+    });
+
+    res.status(200).json({
+      status: `success`,
+      result: articleLikes.length,
+      totalDoc: await Article.countDocuments(),
+      data: {
+        data: populateArticleLikes,
+      },
+    });
+  }
+);
+
+/*
  * @route PATCH api/v1/mobile/articles/:id/remove-photo
  * @desc remove article photo
  * @ascess private
@@ -182,6 +278,8 @@ export {
   getOneArticle,
   postArticle,
   updateArticle,
+  toggleArticleLikeUnlike,
+  getLikesOfAnArticle,
   removeArticlePhoto,
   deleteArticle,
 };

@@ -4,6 +4,7 @@ import {
   IArticleDocument,
   IArticleModel,
 } from "@/resources/interfaces/article.interface";
+import mongoose from "mongoose";
 
 const ArticleSchema: Schema = new Schema(
   {
@@ -44,6 +45,12 @@ const ArticleSchema: Schema = new Schema(
     author: {
       type: Schema.Types.ObjectId,
       ref: "User",
+    },
+    likedBy: {
+      type: [Schema.Types.ObjectId],
+      ref: "User",
+      default: [],
+      select: false,
     },
     noOfLikes: {
       type: Number,
@@ -94,6 +101,23 @@ ArticleSchema.virtual("comments", {
 });
 
 // Agregate Pipeline
+
+ArticleSchema.statics.getLikesOfArticles = async function (articleId) {
+  return await this.aggregate([
+    {
+      $match: { _id: new mongoose.Types.ObjectId(articleId) },
+    },
+    {
+      $project: {
+        title: 1,
+        category: 1,
+        author: 1,
+        noOfLikes: 1,
+        likedBy: 1,
+      },
+    },
+  ]);
+};
 
 // Get begining date of a new week
 

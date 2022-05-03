@@ -8,13 +8,14 @@ import {
   getOneArticle,
   postArticle,
   updateArticle,
+  toggleArticleLikeUnlike,
+  getLikesOfAnArticle,
   removeArticlePhoto,
   deleteArticle,
 } from "@/resources/controllers/article.controller";
 
 import { commentsRouter } from "@/resources/routes/comment.route";
 import { bookmarksRouter } from "@/resources/routes/bookmark.route";
-import { likesRouter } from "@/resources/routes/like.route";
 
 import uploadPhoto from "@/utils/multer.utils";
 
@@ -36,6 +37,12 @@ articlesRouter
   .delete(protectRoute, deleteArticle);
 
 articlesRouter
+  .route("/:id/like-toggle-unlike")
+  .patch(protectRoute, toggleArticleLikeUnlike);
+
+articlesRouter.route("/:id/likes").get(protectRoute, getLikesOfAnArticle);
+
+articlesRouter
   .route("/:id/remove-photo")
   .patch(protectRoute, removeArticlePhoto);
 
@@ -43,7 +50,5 @@ articlesRouter
 articlesRouter.use("/:id/comments", protectRoute, commentsRouter);
 // /api/v1/mobile/articles:articleId/bookmarks
 articlesRouter.use("/:id/bookmarks", protectRoute, bookmarksRouter);
-// /api/v1/mobile/articles:articleId/likes
-articlesRouter.use("/:id/likes", protectRoute, likesRouter);
 
 export { articlesRouter };
