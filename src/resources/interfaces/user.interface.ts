@@ -1,3 +1,4 @@
+import { Model, Types } from "mongoose";
 interface IUserDocument {
   fullName: string;
   email: string;
@@ -7,7 +8,16 @@ interface IUserDocument {
   headline?: string;
   bio?: string;
   role?: string;
+  followers?: string[];
+  followersCount?: number;
+  following?: string[];
+  followingCount?: number;
   active?: boolean;
+}
+
+interface IUserModel extends Model<IUserDocument> {
+  getFollowers: (this: Model<any>, ...args: any[]) => any;
+  getFollowing: (this: Model<any>, ...args: any[]) => any;
 }
 
 interface IUserLogin {
@@ -20,4 +30,4 @@ interface IChangePassword {
   newPassword: string;
 }
 
-export { IUserDocument, IUserLogin, IChangePassword };
+export { IUserDocument, IUserModel, IUserLogin, IChangePassword };

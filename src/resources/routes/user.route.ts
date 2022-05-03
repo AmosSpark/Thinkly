@@ -12,6 +12,9 @@ import {
   getUserProfile,
   updateUserProfile,
   removeUserProfilePhoto,
+  toggleFollowUnfollowUser,
+  getFollowers,
+  getFollowing,
   getAuser,
   deactivateMyAccount,
 } from "@/resources/controllers/user.controller";
@@ -34,6 +37,14 @@ usersRouter.route("/users/me/update-me").patch(uploadPhoto, updateUserProfile);
 usersRouter
   .route("/users/me/remove-profile-photo")
   .patch(removeUserProfilePhoto);
+
+usersRouter
+  .route("/users/:id/follow-toggle-unfollow")
+  .patch(toggleFollowUnfollowUser);
+
+usersRouter.route("/users/:id/followers").get(getFollowers);
+
+usersRouter.route("/users/:id/following").get(getFollowing);
 
 usersRouter.route("/users/me/deactivate-account").delete(deactivateMyAccount);
 
