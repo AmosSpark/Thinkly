@@ -4,6 +4,7 @@ import {
   IArticleDocument,
   IArticleModel,
 } from "@/resources/interfaces/article.interface";
+import mongoose from "mongoose";
 
 const ArticleSchema: Schema = new Schema(
   {
@@ -101,11 +102,11 @@ ArticleSchema.virtual("comments", {
 
 // Agregate Pipeline
 
-ArticleSchema.statics.getLikesOfArticles = async function () {
+ArticleSchema.statics.getLikesOfArticles = async function (articleId) {
   return await this.aggregate([
-    // {
-    //   $match: { article: articleId },
-    // },
+    {
+      $match: { _id: new mongoose.Types.ObjectId(articleId) },
+    },
     {
       $project: {
         title: 1,

@@ -188,8 +188,10 @@ const toggleArticleLikeUnlike = catchAsync(
 
 const getLikesOfAnArticle = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const articleLikes = await Article.getLikesOfArticles();
+    // load aggregate pipeline
+    const articleLikes = await Article.getLikesOfArticles(req.params.id);
 
+    // populate likedBy property
     const populateArticleLikes = await Article.populate(articleLikes, {
       path: "author likedBy",
       select: { fullName: 1, headline: 1 },
@@ -197,7 +199,7 @@ const getLikesOfAnArticle = catchAsync(
 
     res.status(200).json({
       status: `success`,
-      result: 1,
+      result: articleLikes.length,
       totalDoc: await Article.countDocuments(),
       data: {
         data: populateArticleLikes,
