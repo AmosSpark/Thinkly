@@ -44,3 +44,5 @@ process.on("unhandledRejection", (error: any) => {
     process.exit(1);
   });
 });
+
+export default server;

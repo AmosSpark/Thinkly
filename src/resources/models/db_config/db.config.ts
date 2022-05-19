@@ -3,7 +3,11 @@ import { connect } from "mongoose";
 import * as dotenv from "dotenv";
 dotenv.config();
 
-const URI: string = String(process.env.MONGO_URI);
+let URI: string = String(process.env.MONGO_URI);
+
+if (process.env.NODE_ENV === "test") {
+  URI = String(process.env.MONGO_URI_TEST);
+}
 
 connect(URI)
   .then(() => {
