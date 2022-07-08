@@ -19,6 +19,8 @@ dotenv.config();
 // Database Configuration
 import "./resources/models/db_config/db.config";
 
+import { Server } from "http";
+
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
@@ -31,9 +33,13 @@ if (!process.env.PORT) {
   process.exit(1);
 }
 
-const server = app.listen(PORT, () => {
-  console.log(`App now listening on port ${PORT}`);
-});
+let server: Server;
+
+if (process.env.NODE_ENV !== "test") {
+  server = app.listen(PORT, () => {
+    console.log(`App now listening on port ${PORT}`);
+  });
+}
 
 // Handle async uncaught errors
 process.on("unhandledRejection", (error: any) => {
@@ -44,5 +50,3 @@ process.on("unhandledRejection", (error: any) => {
     process.exit(1);
   });
 });
-
-export default server;

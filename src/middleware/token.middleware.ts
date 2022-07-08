@@ -47,4 +47,4 @@ const createSendToken = (
   });
 };
 
-export { createSendToken };
+export { createSendToken, signToken };

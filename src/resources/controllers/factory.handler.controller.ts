@@ -158,7 +158,7 @@ const updateOne = (Model: Model<any>) =>
 
     const updateDoc = await Model.findByIdAndUpdate(doc.id, body, {
       new: true,
-      runValidator: true,
+      runValidators: true,
     });
 
     res.status(200).json({
