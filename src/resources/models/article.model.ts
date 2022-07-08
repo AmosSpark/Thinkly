@@ -109,10 +109,6 @@ ArticleSchema.statics.getLikesOfArticles = async function (articleId) {
     },
     {
       $project: {
-        title: 1,
-        category: 1,
-        author: 1,
-        noOfLikes: 1,
         likedBy: 1,
       },
     },

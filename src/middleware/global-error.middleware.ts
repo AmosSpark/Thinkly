@@ -40,6 +40,29 @@ const handleDDBadRequestValue = (error: any) => {
   return new AppError(error.message, 400);
 };
 
+// jwt error
+
+const handleJWTError = () => {
+  return new AppError("Invalid token. Please log in again!", 401);
+};
+
+const handleJWTExpiredError = () => {
+  return new AppError("Your token has expired! Please log in again.", 401);
+};
+
+// cloudinary error
+
+const handleConnectCloudinaryError = () => {
+  return new AppError(
+    "Unable to upload photo! Please check your internet or try again.",
+    500
+  );
+};
+
+const handleStaleCloudinaryRequestError = () => {
+  return new AppError("Old request! Please try again.", 500);
+};
+
 // development response
 const sendErrDev = (error: any, res: Response) => {
   res.status(error.statusCode).json({
@@ -80,13 +103,19 @@ const globalError = (
 
   if (process.env.NODE_ENV === "development") {
     sendErrDev(error, res);
-  } else if (process.env.NODE_ENV === "production") {
+  } else if (process.env.NODE_ENV === "production" || "test") {
     // handle error types
     if (error.name === "CastError") error = handleDBCastError(error);
     if (error.code === 11000) error = handleDBDuplicateFields(error);
     if (error.name === "ValidationError")
       error = handleDBValidationError(error);
     if (error.code === 2) error = handleDDBadRequestValue(error);
+    if (error.name === "JsonWebTokenError") error = handleJWTError();
+    if (error.name === "TokenExpiredError") error = handleJWTExpiredError();
+    if (error.hostname === "api.cloudinary.com" && error.errno === -3008)
+      error = handleConnectCloudinaryError();
+    if (error.http_code === 400 && error.name === "Error")
+      error = handleStaleCloudinaryRequestError();
 
     sendErrProd(error, res);
   }

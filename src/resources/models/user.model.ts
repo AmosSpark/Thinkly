@@ -2,8 +2,12 @@ import { Schema, model } from "mongoose";
 
 import bcrypt from "bcrypt";
 import validator from "validator";
-import { IUserDocument } from "@/resources/interfaces/user.interface";
+import {
+  IUserDocument,
+  IUserModel,
+} from "@/resources/interfaces/user.interface";
 import { userDefaultPhoto } from "@/utils/cloudinary.utils";
+import mongoose from "mongoose";
 
 const UserSchema: Schema = new Schema(
   {
@@ -59,6 +63,26 @@ const UserSchema: Schema = new Schema(
       type: String,
       enum: ["user", "admin"],
       default: "user",
+    },
+    following: {
+      type: [Schema.Types.ObjectId],
+      ref: "User",
+      default: [],
+      select: false,
+    },
+    followingCount: {
+      type: Number,
+      default: 0,
+    },
+    followers: {
+      type: [Schema.Types.ObjectId],
+      ref: "User",
+      default: [],
+      select: false,
+    },
+    followersCount: {
+      type: Number,
+      default: 0,
     },
     active: {
       type: Boolean,
@@ -155,4 +179,32 @@ UserSchema.pre(/^find/, function (next) {
   next();
 });
 
-export default model<IUserDocument>("User", UserSchema);
+// Aggregate Pipeline
+
+UserSchema.statics.getFollowers = async function (userId) {
+  return await this.aggregate([
+    {
+      $match: { _id: new mongoose.Types.ObjectId(userId) },
+    },
+    {
+      $project: {
+        followers: 1,
+      },
+    },
+  ]);
+};
+
+UserSchema.statics.getFollowing = async function (userId) {
+  return await this.aggregate([
+    {
+      $match: { _id: new mongoose.Types.ObjectId(userId) },
+    },
+    {
+      $project: {
+        following: 1,
+      },
+    },
+  ]);
+};
+
+export default model<IUserDocument, IUserModel>("User", UserSchema);

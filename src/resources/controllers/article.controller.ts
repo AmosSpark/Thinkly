@@ -118,6 +118,8 @@ const updateArticle = updateOne(Article);
  * @ascess private
  */
 
+var setLikesCount: () => any;
+
 const toggleArticleLikeUnlike = catchAsync(
   async (req: Request | any, res: Response, next: NextFunction) => {
     // get current user
@@ -141,15 +143,19 @@ const toggleArticleLikeUnlike = catchAsync(
       await article.updateOne({
         $push: { likedBy: req.user.id },
       });
-      // B - get updated article - so as to get number of likes
-      const getUpdatedArticle = await Article.findById(req.params.id).select(
-        "likedBy"
-      );
 
-      // C - set number of likes to updated article
-      await getUpdatedArticle?.updateOne({
-        noOfLikes: getUpdatedArticle.likedBy?.length,
-      });
+      // set likes count function
+      setLikesCount = async () => {
+        // B - get updated article - so as to get number of likes
+        const getUpdatedArticle = await Article.findById(req.params.id).select(
+          "likedBy"
+        );
+
+        // C - set number of likes to updated article
+        await getUpdatedArticle?.updateOne({
+          noOfLikes: getUpdatedArticle.likedBy?.length,
+        });
+      };
 
       res.status(200).json({
         status: `success`,
@@ -162,15 +168,8 @@ const toggleArticleLikeUnlike = catchAsync(
         $pull: { likedBy: req.user.id },
       });
 
-      // B - get updated article - so as to get number of likes
-      const getUpdatedArticle = await Article.findById(req.params.id).select(
-        "likedBy"
-      );
-
-      // C - set number of likes to updated article
-      await getUpdatedArticle?.updateOne({
-        noOfLikes: getUpdatedArticle.likedBy?.length,
-      });
+      // set likes count function
+      setLikesCount;
 
       res.status(200).json({
         status: `success`,
@@ -191,15 +190,25 @@ const getLikesOfAnArticle = catchAsync(
     // load aggregate pipeline
     const articleLikes = await Article.getLikesOfArticles(req.params.id);
 
+    // if article does not exist
+    if (articleLikes.length === 0) {
+      return next(
+        new AppError(`Document with id: ${req.params.id} not found`, 404)
+      );
+    }
+
     // populate likedBy property
     const populateArticleLikes = await Article.populate(articleLikes, {
-      path: "author likedBy",
-      select: { fullName: 1, headline: 1 },
+      path: "likedBy",
+      select: { fullName: 1, photo: 1, headline: 1, bio: 1 },
     });
+
+    // get article likedBy so as to set length of result
+    const article = await Article.findById(req.params.id).select("likedBy");
 
     res.status(200).json({
       status: `success`,
-      result: articleLikes.length,
+      result: article?.likedBy?.length,
       totalDoc: await Article.countDocuments(),
       data: {
         data: populateArticleLikes,
