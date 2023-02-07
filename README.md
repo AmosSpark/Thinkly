@@ -1,6 +1,6 @@
 ## Thinkly-API
 
-An api for thinly - a blogging app.
+An api for thinkly - a blogging app.
 
 ### How Use 🚀
 
